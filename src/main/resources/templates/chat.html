@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+<title>home</title>
+</head>
+<body>
+<noscript><h1>浏览器不支持websocket</h1></noscript>
+<h1>聊天室</h1>
+<form id="catForm">
+	<textarea rows="4" cols="60" name="text"></textarea>
+	<input type="submit" />
+</form>
+
+
+<div id="output"></div>
+
+<script th:src="@{js/sockjs.min.js}" ></script>
+<script th:src="@{js/stomp.min.js}" ></script>
+<script th:src="@{js/jquery-3.1.1.min.js}" ></script>
+<script type="text/javascript">
+	var sock = new SockJS('/testChat');
+	var stomp = Stomp.over(sock);
+	stomp.connect('guest','guest', function(frame){
+		stomp.subscribe('/user/queue/notifications',showResponse);
+	});
+
+	$('#catForm').submit(function(e){
+		e.preventDefault();
+		var text = $('#catForm').find('textarea[name="text"]').val();
+		sendSpittle(text);
+	});
+
+	
+
+	function sendSpittle(text){
+		stomp.send("/chat", {}, text);
+	}
+
+	function showResponse(message){
+		var response = $("#output");
+		response.append("<b>Received: " + message.body + "</b><br/>")
+	}
+</script>
+
+</body>
+</html>
